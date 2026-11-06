@@ -1,0 +1,106 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "gameprod",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "gameprod"
+  },
+  "runtimes": [
+    {
+      "name": "diceserver",
+      "build": "CodeZip",
+      "entrypoint": "dice_roll_mcp_server.py",
+      "codeLocation": "../diceserver/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "instrumentation": {
+        "enableOtel": false
+      },
+      "protocol": "MCP"
+    },
+    {
+      "name": "characteragent",
+      "build": "CodeZip",
+      "entrypoint": "character_agent.py",
+      "codeLocation": "../characteragent/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "protocol": "A2A",
+      "additionalPolicies": [
+        "memory-policy.json"
+      ]
+    },
+    {
+      "name": "rulesagent",
+      "build": "CodeZip",
+      "entrypoint": "rules_agent.py",
+      "codeLocation": "../rulesagent/",
+      "runtimeVersion": "PYTHON_3_14",
+      "envVars": [
+        {
+          "name": "KNOWLEDGE_BASE_RULES_ID",
+          "value": "NLS2AKCB3B"
+        }
+      ],
+      "networkMode": "PUBLIC",
+      "protocol": "A2A",
+      "additionalPolicies": [
+        "kb-policy.json"
+      ]
+    },
+    {
+      "name": "gamemaster",
+      "build": "CodeZip",
+      "entrypoint": "gamemaster_orchestrator.py",
+      "codeLocation": "../gamemaster/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP",
+      "envVars": [
+          {"name": "DICE_SERVER_URL", "value": "<your diceserver URL>"},
+          {"name": "CHARACTER_AGENT_URL", "value": "<your characteragent URL>"},
+          {"name": "RULES_AGENT_URL", "value": "<your rulesagent URL>"}
+      ],
+      "additionalPolicies": ["invoke-policy.json"]
+
+    }
+  ],
+  "memories": [
+    {
+      "name": "characters",
+      "eventExpiryDuration": 365,
+      "strategies": []
+    },
+    {
+      "name": "conversations",
+      "eventExpiryDuration": 30,
+      "strategies": []
+    }
+  ],
+  "knowledgeBases": [
+    {
+      "type": "AgentCoreKnowledgeBase",
+      "name": "rules",
+      "description": "Basic Rules",
+      "dataSources": [
+        {
+          "type": "S3",
+          "uri": "s3://gameprod-rules-<your account id>/"
+        }
+      ]
+    }
+  ],
+  "credentials": [],
+  "evaluators": [],
+  "onlineEvalConfigs": [],
+  "agentCoreGateways": [],
+  "policyEngines": [],
+  "configBundles": [],
+  "abTests": [],
+  "harnesses": [],
+  "datasets": [],
+  "capacityProviders": [],
+  "payments": []
+}

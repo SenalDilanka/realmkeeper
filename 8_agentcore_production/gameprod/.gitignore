@@ -1,0 +1,4 @@
+agentcore/cdk/cdk.out/
+agentcore/cdk/node_modules/
+agentcore/.cli/
+agentcore/aws-targets.json
